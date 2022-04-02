@@ -1,7 +1,7 @@
-#ServletBoot
+# ServletBoot
 Simple servlet based web framework for convenient working with java servlet.<br>
 Provides MVC API similar to SpringBoot framework.<br>
-##API Includes:
+## API Includes:
 * Set of annotations to work with
 * IoC container
 * Controller classes support
