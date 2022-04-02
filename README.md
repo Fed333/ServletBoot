@@ -4,6 +4,8 @@ Provides MVC API similar to SpringBoot framework.<br>
 ## API Includes:
 * Set of annotations to work with
 * IoC container
+* Dependency injection
+* Singleton classes support
 * Controller classes support
 * Means of setting mapping for http requests
 * Means of binding web parameters
