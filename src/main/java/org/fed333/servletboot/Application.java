@@ -12,6 +12,7 @@ import org.fed333.servletboot.web.binding.manager.ParameterBinderManager;
 import org.reflections.Reflections;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -36,15 +37,20 @@ public class Application {
      * @see ApplicationContext
      * */
     public static ApplicationContext run(String packageToScan, Map<Class, Class> ifc2ImplClass){
+        String libraryPackage = Application.class.getPackageName();
+        Config systemConfig = new JavaConfig(libraryPackage, new HashMap<>());
+
         Config config = new JavaConfig(packageToScan, ifc2ImplClass);
-        ApplicationContext context = new ApplicationContext(config);
+        ApplicationContext context = new ApplicationContext(config, systemConfig);
+
         ObjectFactory factory = new ObjectFactory(context);
         context.setFactory(factory);
 
+        initNoLazySingletons(systemConfig, context);
         initNoLazySingletons(config, context);
 
-        setSupportedFormatters(config, context);
-        setSupportedBinders(config, context);
+        setSupportedFormatters(context);
+        setSupportedBinders(context);
 
         return context;
     }
@@ -67,12 +73,11 @@ public class Application {
     /**
      * Sets all supported formatters.<br>
      * Adds FormatterManager with preliminary put basic Formatters to the ApplicationContext.<br>
-     * @param config Config with interface to implementation classes
      * @param context ApplicationContext
      * @author Roman Kovalchuk
      * @since 1.2
      * */
-    private static void setSupportedFormatters(Config config, ApplicationContext context){
+    private static void setSupportedFormatters(ApplicationContext context){
         String packageToScan = Application.class.getPackageName() + ".format.formatter.impl";
 
         FormatterManager manager = context.getObject(FormatterManager.class);
@@ -90,12 +95,11 @@ public class Application {
     /**
      * Sets all supported ParameterBinder objects inside ParameterBinderManager singleton.<br>
      * Settings based on scanning a web.binding.binder.impl package
-     * @param config Config with interface to implementation classes
      * @param context ApplicationContext
      * @author Roman Kovalchuk
      * @since 1.3
      * */
-    private static void setSupportedBinders(Config config, ApplicationContext context){
+    private static void setSupportedBinders(ApplicationContext context){
         String packageToScan = Application.class.getPackageName() + ".web.binding.binder.impl";
         Reflections scanner = new Reflections(packageToScan);
         ParameterBinderManager manager = context.getObject(ParameterBinderManager.class);

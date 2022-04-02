@@ -1,8 +1,8 @@
 package org.fed333.servletboot.context;
 
 import org.fed333.servletboot.annotation.Singleton;
-import org.fed333.servletboot.factory.ObjectFactory;
 import org.fed333.servletboot.config.Config;
+import org.fed333.servletboot.factory.ObjectFactory;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -10,7 +10,7 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * Context within the infrastructure works.
  * @author Roman Kovalchuk
- * @version 1.1
+ * @version 1.2
  * */
 public class ApplicationContext {
 
@@ -29,6 +29,13 @@ public class ApplicationContext {
     private final Config config;
 
     /**
+     * Config for establishing implementation of system classes for interfaces.
+     * @since 1.0
+     * @see Config
+     * */
+    private final Config systemConfig;
+
+    /**
      * Cache of all plain JavaBeans singletons.<br>
      * Contains only objects annotated with @Singleton annotation
      * @since 1.0
@@ -36,8 +43,9 @@ public class ApplicationContext {
      * */
     private final Map<Class<?>, Object> cache = new ConcurrentHashMap<>();
 
-    public ApplicationContext(Config config) {
+    public ApplicationContext(Config config, Config systemConfig) {
         this.config = config;
+        this.systemConfig = systemConfig;
     }
 
     /**
@@ -59,7 +67,7 @@ public class ApplicationContext {
 
         Class<? extends T> implClass = clazz;
         if (clazz.isInterface()){
-            implClass = config.getImplClass(clazz);
+            implClass = getImplClass(clazz);
         }
 
         T t = factory.createObject(implClass);
@@ -72,16 +80,30 @@ public class ApplicationContext {
         return t;
     }
 
+    private <T> Class<? extends T> getImplClass(Class<T> clazz) {
+        Class<? extends T> implClass = systemConfig.getImplClass(clazz);
+        return implClass != null ? implClass : config.getImplClass(clazz);
+    }
+
     public void setFactory(ObjectFactory factory) {
         this.factory = factory;
     }
 
     /**
-     * Gives Config with encapsulated logic of establishing implementation classes for interfaces.
+     * Gives application {@link Config} with encapsulated logic of establishing implementation classes for interfaces.
      * @since 1.0
      * @see Config
      * */
     public Config getConfig() {
         return config;
+    }
+
+    /**
+     * Gives system {@link Config} with encapsulated logic of establishing implementation classes for interfaces defined by ServletBoot framework.
+     * @since 1.2
+     * @see Config
+     * */
+    public Config getSystemConfig() {
+        return systemConfig;
     }
 }

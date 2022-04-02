@@ -43,7 +43,7 @@ public class ObjectFactory {
     public ObjectFactory(ApplicationContext context) {
         this.context = context;
 
-        for(Class<? extends ObjectConfigurator> clazz : context.getConfig().getScanner().getSubTypesOf(ObjectConfigurator.class)){
+        for(Class<? extends ObjectConfigurator> clazz : context.getSystemConfig().getScanner().getSubTypesOf(ObjectConfigurator.class)){
             try {
                 configurators.add(clazz.getDeclaredConstructor().newInstance());
             } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
