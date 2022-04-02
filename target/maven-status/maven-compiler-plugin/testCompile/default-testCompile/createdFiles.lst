@@ -1,0 +1,8 @@
+org\fed333\servletboot\application\service\DishService.class
+org\fed333\servletboot\application\service\DishwasherService.class
+org\fed333\servletboot\application\entity\Dishwasher.class
+org\fed333\servletboot\application\service\WomanService.class
+org\fed333\servletboot\application\entity\Dishes.class
+org\fed333\servletboot\TestLaunch.class
+org\fed333\servletboot\application\entity\Woman$BreastSize.class
+org\fed333\servletboot\application\entity\Woman.class
