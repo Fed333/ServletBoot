@@ -16,7 +16,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
  * ObjectFactory class, for creating plain JavaBeans objects within ApplicationContext
  *
  * @author Roman Kovalchuk
- * @version 1.1
+ * @version 1.2
  * */
 public class ObjectFactory {
 
@@ -43,7 +43,7 @@ public class ObjectFactory {
     public ObjectFactory(ApplicationContext context) {
         this.context = context;
 
-        for(Class<? extends ObjectConfigurator> clazz : context.getSystemConfig().getScanner().getSubTypesOf(ObjectConfigurator.class)){
+        for(Class<? extends ObjectConfigurator> clazz : context.getConfig().getSystemScanner().getSubTypesOf(ObjectConfigurator.class)){
             try {
                 configurators.add(clazz.getDeclaredConstructor().newInstance());
             } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {

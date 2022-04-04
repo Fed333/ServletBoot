@@ -23,7 +23,7 @@ import java.util.Set;
  * @see ObjectFactory
  * @see ApplicationContext
  * @author Roman Kovalchuk
- * @version 1.3
+ * @version 1.4
  * */
 @SuppressWarnings("rawtypes")
 public class Application {
@@ -37,16 +37,13 @@ public class Application {
      * @see ApplicationContext
      * */
     public static ApplicationContext run(String packageToScan, Map<Class, Class> ifc2ImplClass){
-        String libraryPackage = Application.class.getPackageName();
-        Config systemConfig = new JavaConfig(libraryPackage, new HashMap<>());
 
         Config config = new JavaConfig(packageToScan, ifc2ImplClass);
-        ApplicationContext context = new ApplicationContext(config, systemConfig);
+        ApplicationContext context = new ApplicationContext(config);
 
         ObjectFactory factory = new ObjectFactory(context);
         context.setFactory(factory);
 
-        initNoLazySingletons(systemConfig, context);
         initNoLazySingletons(config, context);
 
         setSupportedFormatters(context);
@@ -63,7 +60,12 @@ public class Application {
      * @since 1.1
      * */
     private static void initNoLazySingletons(Config config, ApplicationContext context) {
-        for (Class<?> clazz : config.getScanner().getTypesAnnotatedWith(Singleton.class)) {
+        initNoLazySingletons(config.getSystemScanner(), context);
+        initNoLazySingletons(config.getScanner(), context);
+    }
+
+    private static void initNoLazySingletons(Reflections scanner, ApplicationContext context){
+        for (Class<?> clazz : scanner.getTypesAnnotatedWith(Singleton.class)) {
             if (clazz.getAnnotation(Singleton.class).type().equals(Singleton.Type.EAGER)){
                 context.getObject(clazz);
             }

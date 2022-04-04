@@ -5,7 +5,7 @@ import org.reflections.Reflections;
 /**
  * Interface of Configuration for establishing implementation classes for interfaces.
  * @author Roman Kovalchuk
- * @version 1.0
+ * @version 1.1
  * */
 public interface Config {
 
@@ -18,11 +18,20 @@ public interface Config {
     <T> Class<? extends T> getImplClass(Class<T> ifc);
 
     /**
-     * Provides object of class which extends opportunities of standard reflection API. <br>
+     * Gives scanner which is configured to custom application package.<br>
      * Common usage for scanning java packages in finding implementations.
-     * The Reflections class isn't available within standard JDK, for usage add dependency org.reflections reflections 0.9.12.
      * @since 1.0
+     * @return scanner which scans custom application package
      * @see Reflections
      * */
     Reflections getScanner();
+
+    /**
+     * Gives scanner which is configured to {@link org.fed333.servletboot} package.<br>
+     * Common usage for scanning java packages in finding implementations.
+     * @since 1.1
+     * @return scanner which scans {@link org.fed333.servletboot} package
+     * @see Reflections
+     * */
+    Reflections getSystemScanner();
 }
