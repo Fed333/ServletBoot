@@ -3,12 +3,17 @@ package org.fed333.servletboot;
 import org.fed333.servletboot.annotation.Singleton;
 import org.fed333.servletboot.config.Config;
 import org.fed333.servletboot.config.impl.JavaConfig;
-import org.fed333.servletboot.context.ApplicationContext;
-import org.fed333.servletboot.factory.ObjectFactory;
+import org.fed333.servletboot.context.impl.BaseApplicationContext;
+import org.fed333.servletboot.factory.impl.BaseObjectFactory;
 import org.fed333.servletboot.format.formatter.Formatter;
 import org.fed333.servletboot.format.manager.FormatterManager;
+import org.fed333.servletboot.source.input.InputStreamSource;
+import org.fed333.servletboot.source.input.impl.ClasspathInputStreamSource;
+import org.fed333.servletboot.source.properties.PropertiesSource;
+import org.fed333.servletboot.source.properties.impl.BasePropertiesSource;
 import org.fed333.servletboot.web.binding.binder.ParameterBinder;
 import org.fed333.servletboot.web.binding.manager.ParameterBinderManager;
+import org.jetbrains.annotations.NotNull;
 import org.reflections.Reflections;
 
 import java.lang.reflect.InvocationTargetException;
@@ -20,13 +25,14 @@ import java.util.Set;
  * Runner class of the infrastructure. <br>
  * Sets Config implementation, creates ObjectFactory, raises ApplicationContext.
  * @see Config
- * @see ObjectFactory
- * @see ApplicationContext
+ * @see BaseObjectFactory
+ * @see BaseApplicationContext
  * @author Roman Kovalchuk
- * @version 1.4
+ * @version 1.5
  * */
 @SuppressWarnings("rawtypes")
 public class Application {
+
     /**
      * Initialize the infrastructure according initial param settings.<br>
      * Raise ApplicationContext.
@@ -34,14 +40,16 @@ public class Application {
      * @param ifc2ImplClass configure map with interface to implementation class relation
      * @return raised ApplicationContext object
      * @since 1.1
-     * @see ApplicationContext
+     * @see BaseApplicationContext
      * */
-    public static ApplicationContext run(String packageToScan, Map<Class, Class> ifc2ImplClass){
+    public static BaseApplicationContext run(String packageToScan, Map<Class, Class> ifc2ImplClass){
+        Map<Class, Class> implClass = getImplClass();
 
-        Config config = new JavaConfig(packageToScan, ifc2ImplClass);
-        ApplicationContext context = new ApplicationContext(config);
+        implClass.putAll(ifc2ImplClass);
+        Config config = new JavaConfig(packageToScan, implClass);
+        BaseApplicationContext context = new BaseApplicationContext(config);
 
-        ObjectFactory factory = new ObjectFactory(context);
+        BaseObjectFactory factory = new BaseObjectFactory(context);
         context.setFactory(factory);
 
         initNoLazySingletons(config, context);
@@ -59,12 +67,12 @@ public class Application {
      * @author Roman Kovalchuk
      * @since 1.1
      * */
-    private static void initNoLazySingletons(Config config, ApplicationContext context) {
+    private static void initNoLazySingletons(Config config, BaseApplicationContext context) {
         initNoLazySingletons(config.getSystemScanner(), context);
         initNoLazySingletons(config.getScanner(), context);
     }
 
-    private static void initNoLazySingletons(Reflections scanner, ApplicationContext context){
+    private static void initNoLazySingletons(Reflections scanner, BaseApplicationContext context){
         for (Class<?> clazz : scanner.getTypesAnnotatedWith(Singleton.class)) {
             if (clazz.getAnnotation(Singleton.class).type().equals(Singleton.Type.EAGER)){
                 context.getObject(clazz);
@@ -79,7 +87,7 @@ public class Application {
      * @author Roman Kovalchuk
      * @since 1.2
      * */
-    private static void setSupportedFormatters(ApplicationContext context){
+    private static void setSupportedFormatters(BaseApplicationContext context){
         String packageToScan = Application.class.getPackageName() + ".format.formatter.impl";
 
         FormatterManager manager = context.getObject(FormatterManager.class);
@@ -101,7 +109,7 @@ public class Application {
      * @author Roman Kovalchuk
      * @since 1.3
      * */
-    private static void setSupportedBinders(ApplicationContext context){
+    private static void setSupportedBinders(BaseApplicationContext context){
         String packageToScan = Application.class.getPackageName() + ".web.binding.binder.impl";
         Reflections scanner = new Reflections(packageToScan);
         ParameterBinderManager manager = context.getObject(ParameterBinderManager.class);
@@ -113,5 +121,12 @@ public class Application {
                 e.printStackTrace();
             }
         });
+    }
+
+    private static HashMap<Class, Class> getImplClass() {
+        return new HashMap<>(Map.of(
+                InputStreamSource.class, ClasspathInputStreamSource.class,
+                PropertiesSource.class, BasePropertiesSource.class
+        ));
     }
 }
